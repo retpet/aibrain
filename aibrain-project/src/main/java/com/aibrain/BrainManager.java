@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.util.EnumMap;
 import java.util.Map;
 
-/** Keeps one brain per mode and stores them in config/aibrain, so they survive world changes. */
+/** Keeps one brain per mode and stores everything in config/aibrain, so it survives world changes. */
 public class BrainManager {
 
     public enum Mode { SURVIVAL, CREATIVE }
@@ -28,6 +28,8 @@ public class BrainManager {
                 mode = Mode.SURVIVAL;
             }
         }
+        Taste.load(new File(dir, "taste.dat"));
+        Progress.load(new File(dir, "progress.dat"));
     }
 
     public static Mode getMode() {
@@ -54,9 +56,12 @@ public class BrainManager {
     }
 
     public static void save() {
+        if (dir == null) return;
         for (Map.Entry<Mode, Brain> e : brains.entrySet()) {
             e.getValue().save(fileFor(e.getKey()));
         }
+        Taste.save(new File(dir, "taste.dat"));
+        Progress.save(new File(dir, "progress.dat"));
     }
 
     public static void reset() {
