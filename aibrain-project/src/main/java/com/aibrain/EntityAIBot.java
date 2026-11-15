@@ -37,7 +37,8 @@ public class EntityAIBot extends EntityCreature {
 
     /** The brain controls the bot here (runs on the server only). */
     @Override
-    protected void updateEntityActionState() {
+    protected void updateAITasks() {
+        super.updateAITasks();
         Brain brain = BrainManager.getBrain();
 
         EntityPlayer player = world.getClosestPlayerToEntity(this, 64.0D);
@@ -51,7 +52,6 @@ public class EntityAIBot extends EntityCreature {
                 mob = m;
             }
         }
-
         // ---- inputs ("eyes") ----
         float[] in = new float[Brain.IN];
         if (player != null) {
@@ -91,9 +91,12 @@ public class EntityAIBot extends EntityCreature {
         // ---- actions ----
         rotationYaw += out[0] * 25f;
         rotationYawHead = rotationYaw;
-        setAIMoveSpeed((float) getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue());
-        moveForward = (out[1] + 1f) * 0.5f;
-        moveStrafing = 0f;
+
+        float speed = (out[1] + 1f) * 0.5f;
+        if (speed > 0.05f) {
+            double r = Math.toRadians(rotationYaw);
+            getMoveHelper().setMoveTo(posX - Math.sin(r) * 2.0D, posY, posZ + Math.cos(r) * 2.0D, speed);
+        }
 
         if (out[2] > 0.3f && onGround) {
             jump();
@@ -108,7 +111,6 @@ public class EntityAIBot extends EntityCreature {
             reward += 0.5f;
             if (mob.getHealth() <= 0f) reward += 5f;
         }
-
         // ---- reward ----
         if (player != null) {
             float d = (float) Math.min(Math.sqrt(getDistanceSq(player)), 20.0D);
